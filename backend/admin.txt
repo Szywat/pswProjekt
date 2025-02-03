@@ -1,0 +1,6 @@
+
+{
+    "login": "admin123",
+    "password": "qwerty12345"
+}
+
