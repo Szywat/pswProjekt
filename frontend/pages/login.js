@@ -15,10 +15,13 @@ export default function Login() {
         });
         const data = await res.json();
         if (data.success && data.role === "administrator") {
-            sessionStorage.setItem("role", data.role)
+            sessionStorage.setItem("role", "administrator")
+            sessionStorage.setItem("username", data.username);
+
             router.push("/adminDashboard")
         } else if (data.success) {
-            sessionStorage.setItem("role", data.role)
+            sessionStorage.setItem("role", "user")
+            sessionStorage.setItem("username", data.username);
             router.push("/menu")
         } else {
             setError(data.message)

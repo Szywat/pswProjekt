@@ -8,7 +8,7 @@ export default function Dashboard() {
   useEffect(() => {
     const role = sessionStorage.getItem("role");
     if (role !== "administrator") {
-      router.push("/");
+      router.push("/menu");
     }
   }, [router]);
 

@@ -1,3 +1,24 @@
-[
-    
-]
+{
+    "products": [
+        {
+            "product": "chleb",
+            "count": 9
+        },
+        {
+            "product": "ser",
+            "count": 9
+        },
+        {
+            "product": "szynka",
+            "count": 8
+        },
+        {
+            "product": "pomidor",
+            "count": 7
+        },
+        {
+            "product": "og\u00f3rek",
+            "count": 7
+        }
+    ]
+}
