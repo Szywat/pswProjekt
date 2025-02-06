@@ -1,25 +1,26 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router";
-import LogOut from "../components/LogOut"
+import Cookies from "js-cookie";
+import LogOut from "../components/LogOut";
 export default function Menu() {
     const router = useRouter();
     const [products, setProducts] = useState([]);
     const [order, setOrder] = useState({});
     const [username, setUsername] = useState("");
     const [history, setHistory] = useState([]);
-
+    
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const storedUsername = sessionStorage.getItem("username");
+            const storedUsername = Cookies.get("login");
             
             if (storedUsername) {
                 setUsername(storedUsername);
-                fetchUserOrders(storedUsername);
+                fetchUserOrders(storedUsername);             
             }
         }
     }, []);
 
-    const fetchOrders = async () => {
+    const fetchProducts = async () => {
         try {
             const res = await fetch("http://127.0.0.1:5000/order/products", {
                 method: "GET",
@@ -114,7 +115,7 @@ export default function Menu() {
                     )
                 ))}
             </ul>
-            <button onClick={fetchOrders}>Złóż zamówienie</button>
+            <button onClick={fetchProducts}>Złóż zamówienie</button>
             <LogOut router={router}/>
 
             <h3>Twoje zamówienie:</h3>

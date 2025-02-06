@@ -1,15 +1,41 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
+from flask_socketio import SocketIO, emit
+from flask_sqlalchemy import SQLAlchemy
 import json
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db = SQLAlchemy(app)
+#region baza danych
+#region User
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    login = db.Column(db.String(80), unique=True, nullable=False)
+    password = db.Column(db.String(200), nullable=False)
+    role = db.Column(db.String(20), default="user")
+
+with app.app_context():
+    db.create_all()
+#endregion
+#endregion
 
 USERS_FILE = "users.txt"
 ADMIN_FILE = "admin.txt"
 PRODUCTS_FILE = "products.txt"
 ORDERS_FILE = "orders.json"
+
+@socketio.on("cookies-login")
+def login_with_cookies():
+    pass
+
 def load_users():
     if not os.path.exists(USERS_FILE):
         return []
@@ -55,40 +81,44 @@ def save_orders(orders):
     with open(ORDERS_FILE, "w") as f:
         json.dump(orders, f, indent=4)
 
+@socketio.on("login")
+def logout(username):
+    print(f"Użytkownik {username} zalogował się")
+
+@socketio.on("logout")
+def logout(username):
+    print(f"Użytkownik {username} wylogował się")
+
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
     login = data.get("login")
     password = data.get("password")
-    if not login or not password:
-        return jsonify({"success": False, "message": "Brak loginu lub hasła"}), 400
-    
-    admin = load_admin()
-    if admin and admin["login"] == login and admin["password"] == password:
-        return jsonify({"success": True, "message": "Zalogowano", "role": "administrator", "username": login}), 200
-    
-    users = load_users()
-    if any(user["login"] == login and user["password"] == password for user in users):
-        return jsonify({"success": True, "message": "Zalogowano", "username": login}), 201
-    
-    return jsonify({"success": False, "message": "Błędny login lub hasło"}), 400
+    user = User.query.filter_by(login=login).first()
+    hashed_password = generate_password_hash(password)
+    if user and check_password_hash(user.password, password):
+        return jsonify({"success": True, "role": user.role, "username": login, "password": hashed_password}), 200
+    return jsonify({"success": False, "message": "Złe dane do logowania"}), 400
+
 
 @app.route("/register", methods=["POST"])
 def register():
     data = request.json
     login = data.get("login")
     password = data.get("password")
+
     if not login or not password:
         return jsonify({"success": False, "message": "Brak loginu lub hasła"}), 400
     
-    users = load_users()
-    admin = load_admin()
-    if any(user["login"] == login for user in users) or admin["login"] == login:
+    if User.query.filter_by(login=login).first():
         return jsonify({"success": False, "message": "Login jest już zajęty"}), 400
     
-    users.append({"login": login, "password": password, "role": "user"})
-    save_users(users)
     
+    hashed_password = generate_password_hash(password)
+    new_user = User(login=login,password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+
     return jsonify({"success": True, "message": "Rejestracja udana. Proszę się zalogować"}), 201
 
 @app.route("/order/products", methods=["GET"])
@@ -121,7 +151,7 @@ def get_user_orders(username):
     
     return jsonify({"orders": user_orders})
 
-@app.route("/order/user/<string:username>", methods=["POST"])
+@app.route("/order/user/<username>", methods=["POST"])
 def add_order(username):
     data = request.json
     order_items = data.get("items")
@@ -135,5 +165,30 @@ def add_order(username):
 
     return jsonify({"success": True, "message": "Zamówienie zapisane"}), 201
 
+@app.route("/order/orders", methods=["GET"])
+def get_all_orders():
+    orders = load_orders()
+    return jsonify(orders["orders"])
+
+@app.route("/order/orders", methods=["DELETE"])
+def delete_order():
+    data = request.json
+    index = data.get("index")
+
+    if index is None:
+        return jsonify({"success": False, "message": "Brak indeksu zamówienia"}), 400
+
+    orders = load_orders()
+
+    if index < 0 or index >= len(orders["orders"]):
+        return jsonify({"success": False, "message": "Nieprawidłowy indeks"}), 400
+
+    del orders["orders"][index]
+
+    save_orders(orders)
+
+    return jsonify({"success": True, "message": "Zamówienie usunięte"}), 200
+
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    socketio.run(app, debug=True, host="0.0.0.0")

@@ -1,11 +1,20 @@
-import { useState } from "react"
-import { useRouter } from "next/router"
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { io } from "socket.io-client"
+import Cookies from "js-cookie";
 
 export default function Login() {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
+    const [socket, setSocket] = useState(null);
     const router = useRouter();
+
+    useEffect(() => {
+      const newSocket = io("ws://127.0.0.1:5000");
+      setSocket(newSocket);
+
+    }, [])
 
     const handleLogin = async () => {
         const res = await fetch("http://127.0.0.1:5000/login", {
@@ -14,15 +23,21 @@ export default function Login() {
           body: JSON.stringify({ login, password }),
         });
         const data = await res.json();
-        if (data.success && data.role === "administrator") {
-            sessionStorage.setItem("role", "administrator")
-            sessionStorage.setItem("username", data.username);
+        if (data.success) {
+            Cookies.set("role", data.role, {expires: 1})
+            Cookies.set("login", data.username, {expires: 1});
+            Cookies.set("password", data.password)
 
-            router.push("/adminDashboard")
-        } else if (data.success) {
-            sessionStorage.setItem("role", "user")
-            sessionStorage.setItem("username", data.username);
-            router.push("/menu")
+              if (socket) {
+                socket.emit("login", Cookies.get("login"));
+              }
+
+            if (data.role === "administrator") {
+              router.push("/adminDashboard")
+            } else {
+              router.push("/menu")
+            }
+            
         } else {
             setError(data.message)
         }
