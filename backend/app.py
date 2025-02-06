@@ -27,14 +27,8 @@ with app.app_context():
 #endregion
 #endregion
 
-USERS_FILE = "users.txt"
-ADMIN_FILE = "admin.txt"
 PRODUCTS_FILE = "products.txt"
 ORDERS_FILE = "orders.json"
-
-@socketio.on("cookies-login")
-def login_with_cookies():
-    pass
 
 def load_users():
     if not os.path.exists(USERS_FILE):
