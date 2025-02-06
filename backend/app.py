@@ -27,30 +27,14 @@ with app.app_context():
 #endregion
 #endregion
 
+USERS_FILE = "users.txt"
+ADMIN_FILE = "admin.txt"
 PRODUCTS_FILE = "products.txt"
 ORDERS_FILE = "orders.json"
 
-def load_users():
-    if not os.path.exists(USERS_FILE):
-        return []
-    with open(USERS_FILE, "r") as file:
-        try:
-            return json.load(file)
-        except json.JSONDecodeError:
-            return []
-
-def save_users(users):
-    with open(USERS_FILE, "w") as file:
-        json.dump(users, file, indent=4)
-
-def load_admin():
-    if not os.path.exists(ADMIN_FILE):
-        return None
-    with open(ADMIN_FILE, "r") as file:
-        try:
-            return json.load(file)
-        except json.JSONDecodeError:
-            return None
+@socketio.on("cookies-login")
+def login_with_cookies():
+    pass
 
 def load_products():
     with open(PRODUCTS_FILE, "r") as file:
@@ -93,7 +77,6 @@ def login():
     if user and check_password_hash(user.password, password):
         return jsonify({"success": True, "role": user.role, "username": login, "password": hashed_password}), 200
     return jsonify({"success": False, "message": "Złe dane do logowania"}), 400
-
 
 @app.route("/register", methods=["POST"])
 def register():
@@ -182,7 +165,6 @@ def delete_order():
     save_orders(orders)
 
     return jsonify({"success": True, "message": "Zamówienie usunięte"}), 200
-
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0")
