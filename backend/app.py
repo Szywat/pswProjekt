@@ -1,10 +1,12 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, make_response
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 import json
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
+import uuid
+
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])
@@ -14,7 +16,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-#region baza danych
+#region baza danych     
 #region User
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +26,12 @@ class User(db.Model):
 
 with app.app_context():
     db.create_all()
+#endregion
+#region Ciasteczka
+class Sessions(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    session_id = db.Column(db.String(80), unique=True, nullable=False)
+    user = db.Column(db.String(80), unique=True, nullable=False)
 #endregion
 #endregion
 
@@ -54,14 +62,17 @@ def save_orders(orders):
     with open(ORDERS_FILE, "w") as f:
         json.dump(orders, f, indent=4)
 
+#region sockets
 @socketio.on("login")
-def logout(username):
+def login(username):
     print(f"Użytkownik {username} zalogował się")
 
 @socketio.on("logout")
 def logout(username):
     print(f"Użytkownik {username} wylogował się")
+#endregion
 
+#region login+register
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -70,7 +81,13 @@ def login():
     user = User.query.filter_by(login=login).first()
     hashed_password = generate_password_hash(password)
     if user and check_password_hash(user.password, password):
-        return jsonify({"success": True, "role": user.role, "username": login, "password": hashed_password}), 200
+        session_id = uuid.uuid4()
+        new_session = Sessions(session_id=session_id, user=user)
+        db.session.add(new_session)
+        db.session.commit()
+        response = make_response(jsonify({"success": True, "role": user.role, "username": login, "password": hashed_password}), 200)
+        response.set_cookie("session_id", session_id, samesite="Strict")
+        return response
     return jsonify({"success": False, "message": "Złe dane do logowania"}), 400
 
 @app.route("/register", methods=["POST"])
@@ -92,6 +109,23 @@ def register():
     db.session.commit()
 
     return jsonify({"success": True, "message": "Rejestracja udana. Proszę się zalogować"}), 201
+
+@app.route("/check-login", methods=['GET'])
+def check_login():
+    session_id = request.cookies.get("session_id")
+
+    session = Sessions.query.filter_by(session_id=session_id).first()
+    if session:
+        return jsonify({"logged_in": True, "username": session.user})
+    return jsonify({"logged_in": False})
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    response = make_response(jsonify({"success": True, "message": "Wylogowano"}))
+    response.set_cookie("session_id", "", max_age=0)  # Usunięcie ciasteczka
+    return response
+#endregion
+
 
 @app.route("/order/products", methods=["GET"])
 def get_products():
@@ -137,6 +171,8 @@ def add_order(username):
 
     return jsonify({"success": True, "message": "Zamówienie zapisane"}), 201
 
+
+#region Admin
 @app.route("/order/orders", methods=["GET"])
 def get_all_orders():
     orders = load_orders()
@@ -160,6 +196,8 @@ def delete_order():
     save_orders(orders)
 
     return jsonify({"success": True, "message": "Zamówienie usunięte"}), 200
+
+#endregion
 
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0")

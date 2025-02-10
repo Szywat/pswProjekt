@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { io } from "socket.io-client"
-import Cookies from "js-cookie";
 
 export default function Login() {
     const [login, setLogin] = useState("");
@@ -24,12 +23,12 @@ export default function Login() {
         });
         const data = await res.json();
         if (data.success) {
-            Cookies.set("role", data.role, {expires: 1})
-            Cookies.set("login", data.username, {expires: 1});
-            Cookies.set("password", data.password)
+            sessionStorage.setItem("role", data.role);
+            sessionStorage.setItem("login", data.username);
+            sessionStorage.setItem("password", data.password);
 
               if (socket) {
-                socket.emit("login", Cookies.get("login"));
+                socket.emit("login", sessionStorage.getItem("login"));
               }
 
             if (data.role === "administrator") {

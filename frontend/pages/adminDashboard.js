@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Cookies from "js-cookie";
 import Logout from "../components/LogOut"
 
 export default function Dashboard() {
@@ -8,7 +7,7 @@ export default function Dashboard() {
   const [orderList, setOrderList] = useState([]);
 
   useEffect(() => {
-    const role = Cookies.get("role");
+    const role = sessionStorage.getItem("role");
     if (role !== "administrator") {
       router.push("/menu");
     }

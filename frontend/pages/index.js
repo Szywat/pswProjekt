@@ -1,8 +1,11 @@
 import { useRouter } from "next/router";
+import { useLayoutEffect } from "react"
 
 export default function Home() {
   const router = useRouter();
-
+  useLayoutEffect(() => {
+    return
+  }, [])
   return (
     <div>
       <h1>Restauracja</h1>

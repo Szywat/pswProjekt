@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router";
-import Cookies from "js-cookie";
 import LogOut from "../components/LogOut";
 export default function Menu() {
     const router = useRouter();
@@ -11,7 +10,7 @@ export default function Menu() {
     
     useEffect(() => {
         if (typeof window !== "undefined") {
-            const storedUsername = Cookies.get("login");
+            const storedUsername = sessionStorage.getItem("login");
             
             if (storedUsername) {
                 setUsername(storedUsername);
