@@ -2,7 +2,7 @@
     "products": [
         {
             "product": "chleb",
-            "count": 100
+            "count": 98
         },
         {
             "product": "ser",
@@ -10,15 +10,15 @@
         },
         {
             "product": "szynka",
-            "count": 100
+            "count": 99
         },
         {
             "product": "pomidor",
-            "count": 100
+            "count": 99
         },
         {
             "product": "og\u00f3rek",
-            "count": 98
+            "count": 96
         }
     ]
 }

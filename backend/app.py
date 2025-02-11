@@ -62,6 +62,7 @@ def logout(username):
 def logout(username):
     print(f"Użytkownik {username} wylogował się")
 
+#region login+register
 @app.route("/login", methods=["POST"])
 def login():
     data = request.json
@@ -93,6 +94,9 @@ def register():
 
     return jsonify({"success": True, "message": "Rejestracja udana. Proszę się zalogować"}), 201
 
+#endregion
+
+#region user
 @app.route("/order/products", methods=["GET"])
 def get_products():
     products = load_products()
@@ -136,11 +140,21 @@ def add_order(username):
     save_orders(orders)
 
     return jsonify({"success": True, "message": "Zamówienie zapisane"}), 201
+#endregion
 
+#region admin
 @app.route("/order/orders", methods=["GET"])
 def get_all_orders():
+    search = request.args.get("search", "").lower()
     orders = load_orders()
-    return jsonify(orders["orders"])
+    filtered_orders = [
+        order for order in orders["orders"]
+        if search in order["user"].lower()
+    ]
+    
+    if filtered_orders == [] and search == "":
+        return jsonify(orders["orders"])
+    return jsonify(filtered_orders)
 
 @app.route("/order/orders", methods=["DELETE"])
 def delete_order():
@@ -161,5 +175,6 @@ def delete_order():
 
     return jsonify({"success": True, "message": "Zamówienie usunięte"}), 200
 
+#endregion
 if __name__ == "__main__":
     socketio.run(app, debug=True, host="0.0.0.0")

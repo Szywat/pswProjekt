@@ -1,6 +1,5 @@
 import { io } from "socket.io-client"
 import { useEffect, useState } from "react";
-import Cookies from "js-cookie";
 export default function Logout({ router }) {
   const [socket, setSocket] = useState(null);
 
@@ -12,11 +11,11 @@ export default function Logout({ router }) {
 
   const handleLogout = () => {
     if (socket) {
-      socket.emit("logout", Cookies.get("login"));
+      socket.emit("logout", sessionStorage.getItem("login"));
     }
-    Cookies.remove("login")
-    Cookies.remove("role")
-    Cookies.remove("password")
+    sessionStorage.removeItem("login")
+    sessionStorage.removeItem("role")
+    sessionStorage.removeItem("password")
     
     router.push("/");
   };

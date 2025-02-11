@@ -1,29 +1,32 @@
 import { useEffect, useState } from "react";
-import { useRouter } from "next/router";
-import Cookies from "js-cookie";
-import Logout from "../components/LogOut"
+import { useSearchParams, useRouter } from "next/router";
+import Logout from "../components/LogOut";
+import Filter from "../components/Filter";
 
 export default function Dashboard() {
   const router = useRouter();
   const [orderList, setOrderList] = useState([]);
 
   useEffect(() => {
-    const role = Cookies.get("role");
+    const role = sessionStorage.getItem("role");
     if (role !== "administrator") {
       router.push("/menu");
     }
+
   }, [router]);
 
-  const getOrders = async () => {
-    const res = await fetch("http://127.0.0.1:5000/order/orders", {
+  const getOrders = async (filters = {}) => {
+    const params = new URLSearchParams(filters);
+    const res = await fetch(`http://127.0.0.1:5000/order/orders?${params}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     })
     const data = await res.json()
     setOrderList(data || []);
+    console.log(data);
     
   }
-
+  
   const removeOrder = async (index) => {
     const res = await fetch("http://127.0.0.1:5000/order/orders", {
       method: "DELETE",
@@ -39,8 +42,9 @@ export default function Dashboard() {
   return (
     <div>
       <h1>Panel Administratora</h1>
-      <button onClick={getOrders}>Załaduj zamówienia</button>
       <Logout router={router} />
+      <Filter updateFilters={getOrders} />
+      <h2>Lista zamówień:</h2>
       {orderList.map((order, index) => (
         <ul key={index}>
           <li><strong>{order.user}</strong></li>
