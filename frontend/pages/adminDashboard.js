@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/router";
 import Logout from "../components/LogOut";
 import Filter from "../components/Filter";
+import Chat from "../components/Chat"
 
 export default function Dashboard() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function Dashboard() {
   }
 
   return (
+    <> 
     <div>
       <h1>Panel Administratora</h1>
       <Logout router={router} />
@@ -57,5 +59,8 @@ export default function Dashboard() {
         </ul>
       ))}
     </div>
+    < Chat />
+    </>
+   
   );
 }

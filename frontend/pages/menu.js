@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useRouter } from "next/router";
 import LogOut from "../components/LogOut";
+import Chat from "@/components/Chat"
 export default function Menu() {
     const router = useRouter();
     const [products, setProducts] = useState([]);
@@ -66,7 +67,7 @@ export default function Menu() {
     
             setHistory(prevHistory => [...prevHistory, { items: order}]);
             setOrder({});
-            fetchUserOrders(username); // Aktualizacja historii zamówień
+            fetchUserOrders(username);
         } catch (error) {
             console.error("Błąd składania zamówienia:", error);
         }
@@ -140,6 +141,7 @@ export default function Menu() {
                     </li>
                 ))}
             </ul>
+            <Chat />
         </div>
 
     )
