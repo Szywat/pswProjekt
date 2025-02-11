@@ -6,7 +6,7 @@
         },
         {
             "product": "ser",
-            "count": 100
+            "count": 9
         },
         {
             "product": "szynka",
