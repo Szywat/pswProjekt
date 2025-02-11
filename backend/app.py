@@ -1,12 +1,10 @@
-from flask import Flask, request, jsonify, session, make_response
+from flask import Flask, request, jsonify, session
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 from flask_sqlalchemy import SQLAlchemy
 import json
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-import uuid
-
 
 app = Flask(__name__)
 CORS(app, origins=["http://localhost:3000"])
@@ -16,7 +14,7 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
-#region baza danych     
+#region baza danych
 #region User
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -26,12 +24,6 @@ class User(db.Model):
 
 with app.app_context():
     db.create_all()
-#endregion
-#region Ciasteczka
-class Sessions(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    session_id = db.Column(db.String(80), unique=True, nullable=False)
-    user = db.Column(db.String(80), unique=True, nullable=False)
 #endregion
 #endregion
 
@@ -62,15 +54,13 @@ def save_orders(orders):
     with open(ORDERS_FILE, "w") as f:
         json.dump(orders, f, indent=4)
 
-#region sockets
 @socketio.on("login")
-def login(username):
+def logout(username):
     print(f"Użytkownik {username} zalogował się")
 
 @socketio.on("logout")
 def logout(username):
     print(f"Użytkownik {username} wylogował się")
-#endregion
 
 #region login+register
 @app.route("/login", methods=["POST"])
@@ -81,13 +71,7 @@ def login():
     user = User.query.filter_by(login=login).first()
     hashed_password = generate_password_hash(password)
     if user and check_password_hash(user.password, password):
-        session_id = uuid.uuid4()
-        new_session = Sessions(session_id=session_id, user=user)
-        db.session.add(new_session)
-        db.session.commit()
-        response = make_response(jsonify({"success": True, "role": user.role, "username": login, "password": hashed_password}), 200)
-        response.set_cookie("session_id", session_id, samesite="Strict")
-        return response
+        return jsonify({"success": True, "role": user.role, "username": login, "password": hashed_password}), 200
     return jsonify({"success": False, "message": "Złe dane do logowania"}), 400
 
 @app.route("/register", methods=["POST"])
