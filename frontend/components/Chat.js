@@ -7,9 +7,10 @@ const socket = io("ws://127.0.0.1:5000");
 export default function Chat() {
     const [messages, setMessages] = useState([]);
     const [message, setMessage] = useState("");
-    const login = sessionStorage.getItem("login")
+    const [login, setLogin] = useState("");
 
     useEffect(() => {
+        setLogin(sessionStorage.getItem("login"))
         socket.on("message", (msg) => {
             setMessages((prev) => [...prev, msg]);
         });
