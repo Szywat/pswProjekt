@@ -16,13 +16,16 @@ body {
   }
   
   #chatbox {
-    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    width: 400px;
     background-color: white;
     border: 2px solid black;
     position: fixed; 
     bottom: 0; 
     right: 0;
-    width: 400px; 
+    overflow: hidden;
   }
 
   #form { 
@@ -30,7 +33,7 @@ body {
     padding: 0.25rem; 
     
     display: flex; 
-    height: 3rem; 
+    height: 4rem; 
     box-sizing: border-box; 
     backdrop-filter: blur(10px); 
   }
@@ -57,11 +60,12 @@ body {
     color: #fff; 
   }
 
-  #messages { 
+  #messages {
+    flex-grow: 1;
+    overflow-y: auto;
     list-style-type: none; 
     margin: 0; 
     padding: 0; 
-    height: 300px;
   }
   #messages > li { 
     padding: 0.5rem 1rem; 

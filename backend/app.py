@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, session
 from flask_cors import CORS
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, send, join_room, leave_room
 from flask_sqlalchemy import SQLAlchemy
 import json
 import os
@@ -14,6 +14,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///users.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
+
+rooms = {}
+
 #region baza danych
 #region User
 class User(db.Model):
@@ -61,6 +64,20 @@ def logout(username):
 @socketio.on("logout")
 def logout(username):
     print(f"Użytkownik {username} wylogował się")
+
+@socketio.on("join")
+def handle_join(data):
+    user_id = data["user_id"]
+    room = f"chat_{user_id}"
+    join_room(room)
+    rooms[user_id] = room
+    emit("message", {"user": "System", "text": "Połączono z czatem."}, room=room)
+
+@socketio.on("message")
+def handle_message(arg1, arg2):
+
+    data = {"login": arg2, "text": arg1}
+    emit("message", data, broadcast=True)
 
 #region login+register
 @app.route("/login", methods=["POST"])
