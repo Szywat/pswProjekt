@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { io } from "socket.io-client"
 
-const socket = io("ws://127.0.0.1:5000");
+const socket = io("wss://127.0.0.1:5000");
 
 export default function Chat() {
     const [messages, setMessages] = useState([]);

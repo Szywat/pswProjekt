@@ -2,7 +2,7 @@
     "products": [
         {
             "product": "chleb",
-            "count": 98
+            "count": 97
         },
         {
             "product": "ser",

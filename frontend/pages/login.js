@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/router";
 import { io } from "socket.io-client"
 
-const socket = io("ws://127.0.0.1:5000");
+const socket = io("wss://127.0.0.1:5000");
 
 export default function Login() {
     const [login, setLogin] = useState("");
@@ -11,7 +11,7 @@ export default function Login() {
     const router = useRouter();
 
     const handleLogin = async () => {
-        const res = await fetch("http://127.0.0.1:5000/login", {
+        const res = await fetch("https://127.0.0.1:5000/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ login, password }),

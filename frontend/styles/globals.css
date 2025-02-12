@@ -33,7 +33,7 @@ body {
     padding: 0.25rem; 
     
     display: flex; 
-    height: 4rem; 
+    height: 3rem; 
     box-sizing: border-box; 
     backdrop-filter: blur(10px); 
   }
