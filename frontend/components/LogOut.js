@@ -4,7 +4,7 @@ export default function Logout({ router }) {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    const newSocket = io("wss://127.0.0.1:5000");
+    const newSocket = io("ws://127.0.0.1:5000");
     setSocket(newSocket);
 
   }, []);

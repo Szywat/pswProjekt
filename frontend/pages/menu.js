@@ -22,7 +22,7 @@ export default function Menu() {
 
     const fetchProducts = async () => {
         try {
-            const res = await fetch("https://127.0.0.1:5000/order/products", {
+            const res = await fetch("http://127.0.0.1:5000/order/products", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             })
@@ -55,7 +55,7 @@ export default function Menu() {
 
     const placeOrder = async () => {
         try {
-            const res = await fetch(`https://127.0.0.1:5000/order/user/${username}`, {
+            const res = await fetch(`http://127.0.0.1:5000/order/user/${username}`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ "items": order }),
@@ -75,7 +75,7 @@ export default function Menu() {
 
     const fetchUserOrders = async (username) => {
         try {
-            const res = await fetch(`https://127.0.0.1:5000/order/user/${username}`, {
+            const res = await fetch(`http://127.0.0.1:5000/order/user/${username}`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -93,7 +93,7 @@ export default function Menu() {
 
     const updateProductCount = async (productName, newCount) => {
         try {
-            await fetch("https://127.0.0.1:5000/order/products", {
+            await fetch("http://127.0.0.1:5000/order/products", {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ product: productName, count: newCount }),

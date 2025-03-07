@@ -18,7 +18,7 @@ export default function Dashboard() {
 
   const getOrders = async (filters = {}) => {
     const params = new URLSearchParams(filters);
-    const res = await fetch(`https://127.0.0.1:5000/order/orders?${params}`, {
+    const res = await fetch(`http://127.0.0.1:5000/order/orders?${params}`, {
       method: "GET",
       headers: { "Content-Type": "application/json" },
     })
@@ -29,7 +29,7 @@ export default function Dashboard() {
   }
   
   const removeOrder = async (index) => {
-    const res = await fetch("https://127.0.0.1:5000/order/orders", {
+    const res = await fetch("http://127.0.0.1:5000/order/orders", {
       method: "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ index }),
